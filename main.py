@@ -1,10 +1,20 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from fastapi.responses import JSONResponse
 from openai import OpenAI
 import os
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -46,13 +56,7 @@ async def analyze_comment(data: CommentRequest):
             }
         )
 
-        result = response.output_parsed
-
-        return JSONResponse(
-            content=result,
-            media_type="application/json"
-        )
+        return response.output_parsed
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
